@@ -1,0 +1,3 @@
+{
+  "typescript.tsdk": "auth-backend/node_modules/typescript/lib"
+}

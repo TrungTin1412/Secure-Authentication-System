@@ -1,0 +1,507 @@
+.page {
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #111827 0%, #05070c 55%, #02040a 100%);
+  color: #e5e7eb;
+  padding: 40px 18px;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.header {
+  max-width: 1100px;
+  margin: 0 auto 22px auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.titleWrap h1 {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 6px 0 0 0;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  border: 1px solid #273244;
+  background: rgba(2, 6, 23, 0.65);
+  color: #e5e7eb;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.05s ease, border 0.2s ease, background 0.2s ease;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.btn:hover {
+  background: rgba(17, 24, 39, 0.75);
+  border-color: #364559;
+}
+
+.btn:active {
+  transform: scale(0.99);
+}
+
+.btnDanger {
+  border-color: rgba(239, 68, 68, 0.55);
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: rgba(2, 6, 23, 0.65);
+  border: 1px solid rgba(39, 50, 68, 0.8);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.55);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e5e7eb;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid rgba(39, 50, 68, 0.85);
+  background: rgba(17, 24, 39, 0.7);
+  color: #e5e7eb;
+}
+
+.badgeOk {
+  border-color: rgba(34, 197, 94, 0.55);
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.badgeWarn {
+  border-color: rgba(250, 204, 21, 0.55);
+  background: rgba(250, 204, 21, 0.12);
+}
+
+.badgeDanger {
+  border-color: rgba(239, 68, 68, 0.6);
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  row-gap: 10px;
+  column-gap: 10px;
+  margin-top: 8px;
+}
+
+.k {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.v {
+  font-size: 13px;
+  color: #e5e7eb;
+  word-break: break-word;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+@media (max-width: 520px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+}
+
+.metric {
+  border: 1px solid rgba(39, 50, 68, 0.7);
+  background: rgba(17, 24, 39, 0.55);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.metricLabel {
+  color: #9ca3af;
+  font-size: 12px;
+  margin: 0 0 6px 0;
+}
+
+.metricValue {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.small {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 6px;
+}
+
+.tableWrap {
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(39, 50, 68, 0.7);
+  background: rgba(17, 24, 39, 0.5);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 520px;
+}
+
+.table th, .table td {
+  text-align: left;
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(39, 50, 68, 0.55);
+  font-size: 13px;
+}
+
+.table th {
+  color: #cbd5e1;
+  font-weight: 700;
+  background: rgba(2, 6, 23, 0.35);
+}
+
+.rowMuted {
+  color: #9ca3af;
+}
+
+.footerNote {
+  margin-top: 10px;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.actionCol {
+  text-align: left;
+  white-space: nowrap;
+}
+
+.revokeBtn {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+
+  color: #ffb4b4;
+  background: transparent;
+
+  border: 1px solid rgba(255, 80, 80, 0.5);
+  border-radius: 6px;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.revokeBtn:hover {
+  color: #ffffff;
+  background: rgba(255, 80, 80, 0.85);
+  border-color: rgba(255, 80, 80, 0.9);
+}
+
+.revokeBtn:active {
+  transform: scale(0.97);
+}
+
+.revokeBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dangerRow {
+  background: rgba(255, 80, 80, 0.08);
+}
+
+/* Base */
+.actionCol {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* SUCCESS – login OK */
+.actionSuccess {
+  color: #7ee787; /* green */
+}
+
+/* WARNING – admin revoke, failed login */
+.actionWarn {
+  color: #f2cc60; /* amber */
+}
+
+/* DANGER – refresh token reuse */
+.actionDanger {
+  color: #ff7b72; /* red */
+}
+
+/* Neutral / fallback */
+.actionNeutral {
+  color: #c9d1d9; /* gray */
+}
+
+.linkButton {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.85rem;
+  color: #7dd3fc;
+  cursor: pointer;
+}
+
+.linkButton:hover {
+  text-decoration: underline;
+}
+
+.changePasswordInline {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.changePasswordInput {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(39, 50, 68, 0.85);
+  background: rgba(2, 6, 23, 0.7);
+  color: #e5e7eb;
+  font-size: 14px;
+  outline: none;
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.changePasswordInput:focus {
+  border-color: rgba(125, 211, 252, 0.8);
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.15);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.error {
+  color: #f87171;
+  font-size: 0.85rem;
+}
+
+.success {
+  color: #86efac;
+  font-size: 0.85rem;
+}
+
+.changePasswordBox {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 14px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0.02)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Reuse input style but enhance focus */
+.input {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input:focus {
+  border-color: #4da3ff;
+  box-shadow: 0 0 0 1px rgba(77, 163, 255, 0.4);
+}
+
+/* ===== Action Buttons ===== */
+
+.changePasswordActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.updateBtn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: linear-gradient(
+    135deg,
+    #2ecc71,
+    #27ae60
+  );
+  color: #0b1a12;
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.updateBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(46, 204, 113, 0.35);
+}
+
+.updateBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Cancel = secondary action */
+.cancelBtn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: background 0.15s ease, border 0.15s ease;
+}
+
+.cancelBtn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* ===== Change Password Button ===== */
+
+.changePasswordBtn {
+  align-self: flex-start;
+  padding: 2px 5px;
+  border-radius: 999px; 
+  background: rgba(77, 163, 255, 0.12);
+  border: 1px solid rgba(77, 163, 255, 0.35);
+  color: #7bb7ff;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, border 0.15s ease,
+    transform 0.15s ease;
+}
+
+.changePasswordBtn:hover {
+  background: rgba(77, 163, 255, 0.22);
+  border-color: rgba(77, 163, 255, 0.6);
+  transform: translateY(-1px);
+}
+
+.changePasswordBtn:active {
+  transform: translateY(0);
+}
+
+.changePasswordBtn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(77, 163, 255, 0.35);
+}
+
+.securityLevelBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.securityLevelValue {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* ===== Card Header ===== */
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ===== Role Badges ===== */
+
+.roleBadgeUser,
+.roleBadgeAdmin {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* USER badge */
+.roleBadgeUser {
+  background: rgba(77, 163, 255, 0.15);
+  color: #7bb7ff;
+  border: 1px solid rgba(77, 163, 255, 0.4);
+}
+
+/* ADMIN badge */
+.roleBadgeAdmin {
+  background: rgba(99, 255, 151, 0.15);
+  color: #7bffca;
+  border: 1px solid rgba(99, 255, 213, 0.4);
+}

@@ -1,0 +1,84 @@
+.container {
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #1f2933, #0b0f14);
+  padding: 40px;
+  color: #f9fafb;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.card {
+  max-width: 520px;
+  margin: 0 auto;
+  background: #111827;
+  border-radius: 12px;
+  padding: 28px;
+  border: 1px solid #1f2933;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+}
+
+.title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  margin-bottom: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+}
+
+.label {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  margin-bottom: 4px;
+}
+
+.input {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #374151;
+  background: #020617;
+  color: #f9fafb;
+}
+
+.button {
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: none;
+  font-weight: 600;
+  color: #020617;
+  cursor: pointer;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.success {
+  margin-top: 12px;
+  color: #22c55e;
+  font-size: 0.9rem;
+}
+
+.error {
+  margin-top: 12px;
+  color: #ef4444;
+  font-size: 0.9rem;
+}
+
+.warning {
+  margin-top: 12px;
+  font-size: 0.8rem;
+  color: #facc15;
+}
