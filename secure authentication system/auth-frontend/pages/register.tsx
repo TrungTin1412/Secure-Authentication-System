@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import styles from './register.module.css';
-import { apiRequest } from '@/lib/api';
+import { apiRequest } from '../lib/api';
 
 type SecurityLevel = 'BASIC' | 'BALANCED' | 'HIGH';
 type CaptureAngle = 'STRAIGHT' | 'LEFT' | 'RIGHT' | 'UP' | 'DOWN';
@@ -57,6 +57,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [recoveryPhrase, setRecoveryPhrase] = useState('');
   const [securityLevel, setSecurityLevel] =
     useState<SecurityLevel>('BALANCED');
   const [capturedPhotos, setCapturedPhotos] = useState<CapturedPhoto[]>([]);
@@ -223,6 +224,11 @@ export default function RegisterPage() {
       return;
     }
 
+    if (recoveryPhrase.trim().length < 12) {
+      setError('Recovery phrase must be at least 12 characters long');
+      return;
+    }
+
     if (securityLevel === 'HIGH' && !hasCompletedHighSecurityCapture) {
       openCamera();
       return;
@@ -247,6 +253,7 @@ export default function RegisterPage() {
       await apiRequest('/auth/register', 'POST', {
         email,
         password,
+        recoveryPhrase,
         securityLevel,
         ...(faceSamples ? { faceSamples } : {}),
         ...(faceCaptures?.length ? { faceCaptures } : {}),
@@ -334,6 +341,31 @@ export default function RegisterPage() {
               required
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>Recovery Phrase</label>
+            <textarea
+              className={`${styles.input} ${styles.textarea}`}
+              rows={3}
+              value={recoveryPhrase}
+              required
+              onChange={(e) => setRecoveryPhrase(e.target.value)}
+              placeholder="Example: river lantern coffee april"
+            />
+            <div className={styles.securityHint}>
+              Create a private phrase you can remember but others cannot guess.
+              You will need it if you forget your password.
+            </div>
+            <div className={styles.guidelineBox}>
+              <div className={styles.guidelineTitle}>Recovery phrase guidelines</div>
+              <ul className={styles.guidelineList}>
+                <li>Use 3 to 5 unrelated words or a short private sentence.</li>
+                <li>Make it at least 12 characters long.</li>
+                <li>Do not use birthdays, names, schools, addresses, or phone numbers.</li>
+                <li>Do not reuse your password.</li>
+              </ul>
+            </div>
           </div>
 
           {confirmPassword && password !== confirmPassword && (

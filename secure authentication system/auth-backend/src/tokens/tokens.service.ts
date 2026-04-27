@@ -72,9 +72,7 @@ export class TokensService {
       relations: ['user'],
     });
 
-    // Token không tồn tại → reuse / attack
     if (!existingToken) {
-      // KHÔNG có user chắc chắn
       await this.auditService.log(
         AuthAction.REFRESH_REUSE,
         undefined,
@@ -82,11 +80,9 @@ export class TokensService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    // Token đã dùng / đã revoke → reuse
     if (existingToken.reused || existingToken.revokedAt) {
       await this.revokeTokenFamily(existingToken.familyId);
 
-      // LOG 
       await this.auditService.log(
         AuthAction.REFRESH_REUSE,
         existingToken.user,
@@ -95,12 +91,10 @@ export class TokensService {
       throw new UnauthorizedException('Refresh token reuse detected');
     }
 
-    //Token hợp lệ → tiếp tục rotation
     existingToken.reused = true;
     existingToken.revokedAt = new Date();
     await this.refreshTokenRepository.save(existingToken);
 
-    // 5. Generate new refresh token (same family)
     const newRawToken = crypto.randomBytes(64).toString('hex');
     const newTokenHash = this.hashToken(newRawToken);
 

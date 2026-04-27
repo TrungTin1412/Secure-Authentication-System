@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import styles from './login.module.css';
-import { type ApiError, type LockoutError } from '@/lib/api';
+import { type ApiError, type LockoutError } from '../lib/api';
 import {
   login,
-  verifyLoginTotp,
+  verifyLoginOtp,
   verifyLoginCaptcha,
   verifyLoginFace,
   refreshLoginCaptcha,
-} from '@/lib/auth';
+} from '../lib/auth';
 
 type LoginStage =
   | 'credentials'
@@ -130,6 +130,15 @@ export default function LoginPage() {
   useEffect(() => {
     if (router.query.registered) {
       setMessage('Registration successful. Please login.');
+      return;
+    }
+
+    if (router.query.reset) {
+      setMessage(
+        typeof router.query.message === 'string'
+          ? router.query.message
+          : 'Password reset successful. Please login.',
+      );
     }
   }, [router.query]);
 
@@ -245,6 +254,31 @@ export default function LoginPage() {
     setLockoutSeconds(seconds);
     setLockoutBaseMessage(err.message);
     setError(null);
+  }
+
+  function resetToCredentials(errorMessage?: string) {
+    stopCamera();
+    setStage('credentials');
+    setEmail('');
+    setPassword('');
+    setOtpCode('');
+    setCaptchaCode('');
+    setMfaToken(null);
+    setDeliveryEmail(null);
+    setCaptchaId(null);
+    setCaptchaImageDataUrl(null);
+    setFaceToken(null);
+    setFaceEnrolled(true);
+    setFaceThreshold(null);
+    setFacePromptMessage(null);
+    setFaceSamplesJson('');
+    setCapturedPhotos([]);
+    setCameraOpen(false);
+    setCameraError(null);
+    setFaceMatchDetails(null);
+    setFaceVerificationPassed(false);
+    setMessage(null);
+    setError(errorMessage ?? null);
   }
 
   function beginFaceStep(res: {
@@ -376,7 +410,7 @@ export default function LoginPage() {
         throw new Error('Missing MFA token. Please login again.');
       }
 
-      const res = await verifyLoginTotp(mfaToken, otpCode);
+      const res = await verifyLoginOtp(mfaToken, otpCode);
 
       if ('captchaRequired' in res && res.captchaRequired) {
         setCaptchaId(res.captchaId);
@@ -425,7 +459,11 @@ export default function LoginPage() {
       if (err?.type === 'LOCKOUT') {
         applyLockout(err as LockoutError);
       } else {
-        setError(err.message || 'Captcha verification failed');
+        resetToCredentials(
+          err.message === 'Invalid captcha code'
+            ? 'Captcha was incorrect. Please enter your email and password again.'
+            : err.message || 'Captcha verification failed. Please login again.',
+        );
       }
     } finally {
       setLoading(false);
@@ -657,7 +695,7 @@ export default function LoginPage() {
                 ? 'Verifying...'
                 : isLocked
                   ? `Try again in ${formatSeconds(lockoutSeconds ?? 0)}`
-                  : 'Continue to face check'}
+                  : 'Verify captcha and continue'}
             </button>
           </form>
         ) : (
@@ -813,6 +851,12 @@ export default function LoginPage() {
         ) : error ? (
           <div className={styles.error}>{error}</div>
         ) : null}
+
+        <div className={styles.switch}>
+          <a href="/forgot-password" className={styles.link}>
+            Forgot password?
+          </a>
+        </div>
 
         <div className={styles.switch}>
           Don&apos;t have an account?{' '}

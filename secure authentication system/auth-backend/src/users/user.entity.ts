@@ -27,38 +27,41 @@ export type FaceEmbeddingSample = {
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ unique: true })
-  email: string;
+  email!: string;
 
   @Column({ name: 'password_hash' })
-  passwordHash: string;
+  passwordHash!: string;
 
   @Column({ name: 'hash_algorithm' })
-  hashAlgorithm: string;
+  hashAlgorithm!: string;
 
   @Column({
     type: 'enum',
     enum: UserStatus,
     default: UserStatus.ACTIVE,
   })
-  status: UserStatus;
+  status!: UserStatus;
 
   @Column({ name: 'failed_login_attempts', type: 'int', default: 0 })
-  failedLoginAttempts: number;
+  failedLoginAttempts!: number;
 
   @Column({ name: 'login_lockout_until', type: 'datetime', nullable: true })
   loginLockoutUntil?: Date | null;
 
-  @Column({ name: 'last_authenticated_at', nullable: true })
-  lastAuthenticatedAt?: Date;
+  @Column({ name: 'recovery_phrase_hash', type: 'text', nullable: true })
+  recoveryPhraseHash?: string | null;
 
-  @Column({ name: 'mfa_enabled', default: false })
-  mfaEnabled: boolean;
+  @Column({ name: 'recovery_failed_attempts', type: 'int', default: 0 })
+  recoveryFailedAttempts!: number;
 
-  @Column({ name: 'mfa_secret_encrypted', type: 'text', nullable: true })
-  mfaSecretEncrypted?: string | null;
+  @Column({ name: 'recovery_lockout_until', type: 'datetime', nullable: true })
+  recoveryLockoutUntil?: Date | null;
+
+  @Column({ name: 'last_authenticated_at', type: 'datetime', nullable: true })
+  lastAuthenticatedAt?: Date | null;
 
   @Column({ name: 'email_otp_hash', type: 'varchar', length: 64, nullable: true })
   emailOtpHash?: string | null;
@@ -73,19 +76,18 @@ export class User {
   faceEmbeddingsJson?: string | null;
 
   @Column({ name: 'face_verification_threshold', type: 'float', default: 0.78 })
-  faceVerificationThreshold: number;
+  faceVerificationThreshold!: number;
 
   @ManyToOne(() => SecurityProfile, { eager: true })
-  securityProfile: SecurityProfile;
+  securityProfile!: SecurityProfile;
 
-  @ManyToOne(() => Role, role => role.users, { eager: true, nullable: false })
+  @ManyToOne(() => Role, (role) => role.users, { eager: true, nullable: false })
   @JoinColumn({ name: 'role_id' })
-  role: Role;
+  role!: Role;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  updatedAt!: Date;
 }
-

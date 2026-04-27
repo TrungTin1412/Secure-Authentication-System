@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import styles from './dashboard.module.css';
-import { apiRequest } from '@/lib/api';
-import { refresh, logout } from '@/lib/auth';
+import { apiRequest } from '../lib/api';
+import { refresh, logout } from '../lib/auth';
 
 /* ================= TYPES ================= */
 
@@ -243,32 +243,6 @@ export default function DashboardPage() {
   const isAdmin = me?.role === 'ADMIN';
   const level = me?.securityLevel;
   const summary = level ? getSecuritySummary(level) : null;
-  const tabAwayLogoutMs = 30000;
-
-  /* ---------- AUTO LOGOUT WHEN TAB IS HIDDEN ---------- */
-  useEffect(() => {
-    let hiddenAt: number | null = null;
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        hiddenAt = Date.now();
-        return;
-      }
-
-      if (hiddenAt && Date.now() - hiddenAt >= tabAwayLogoutMs) {
-        logout();
-      }
-
-      hiddenAt = null;
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
-
   /* ================= RENDER ================= */
 
   return (

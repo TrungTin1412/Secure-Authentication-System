@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import styles from './admin.module.css';
-import { apiRequest } from '@/lib/api';
-import { logout } from '@/lib/auth';
+import { apiRequest } from '../lib/api';
+import { logout } from '../lib/auth';
 
 type Profile = {
   userId: string;

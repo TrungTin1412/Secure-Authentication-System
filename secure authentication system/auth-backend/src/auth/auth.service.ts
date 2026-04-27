@@ -29,6 +29,9 @@ const FACE_CHALLENGE_TTL_SECONDS = 180;
 const CAPTCHA_CODE_LENGTH = 6;
 const EMAIL_OTP_LENGTH = 6;
 const EMAIL_OTP_TTL_SECONDS = 300;
+const RECOVERY_PHRASE_MIN_LENGTH = 12;
+const FORGOT_PASSWORD_RATE_LIMIT_MAX = 5;
+const FORGOT_PASSWORD_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 
 type OtpPurpose = 'login' | 'setup' | 'disable';
 
@@ -38,9 +41,15 @@ type CaptchaChallenge = {
   expiresAt: number;
 };
 
+type RateLimitEntry = {
+  count: number;
+  expiresAt: number;
+};
+
 @Injectable()
 export class AuthService {
   private readonly captchaChallenges = new Map<string, CaptchaChallenge>();
+  private readonly forgotPasswordRateLimit = new Map<string, RateLimitEntry>();
 
   constructor(
     private readonly usersService: UsersService,
@@ -68,6 +77,57 @@ export class AuthService {
 
   private hashEmailOtp(code: string) {
     return crypto.createHash('sha256').update(code).digest('hex');
+  }
+
+  private normalizeRecoveryPhrase(phrase: string) {
+    return phrase.trim().replace(/\s+/g, ' ').toLowerCase();
+  }
+
+  private validateRecoveryPhraseStrength(phrase: string) {
+    if (phrase.length < RECOVERY_PHRASE_MIN_LENGTH) {
+      throw new BadRequestException(
+        `Recovery phrase must be at least ${RECOVERY_PHRASE_MIN_LENGTH} characters long`,
+      );
+    }
+  }
+
+  private consumeForgotPasswordRateLimit(email: string, ipAddress?: string) {
+    const now = Date.now();
+
+    for (const [key, entry] of this.forgotPasswordRateLimit.entries()) {
+      if (entry.expiresAt <= now) {
+        this.forgotPasswordRateLimit.delete(key);
+      }
+    }
+
+    const key = `${email.trim().toLowerCase()}|${ipAddress ?? 'unknown'}`;
+    const current = this.forgotPasswordRateLimit.get(key);
+
+    if (!current || current.expiresAt <= now) {
+      this.forgotPasswordRateLimit.set(key, {
+        count: 1,
+        expiresAt: now + FORGOT_PASSWORD_RATE_LIMIT_WINDOW_MS,
+      });
+      return;
+    }
+
+    if (current.count >= FORGOT_PASSWORD_RATE_LIMIT_MAX) {
+      const retryAfterSeconds = Math.max(
+        1,
+        Math.ceil((current.expiresAt - now) / 1000),
+      );
+      throw new HttpException(
+        {
+          message:
+            'Too many password recovery requests. Please try again later.',
+          retryAfterSeconds,
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    current.count += 1;
+    this.forgotPasswordRateLimit.set(key, current);
   }
 
   private maskEmail(email: string) {
@@ -390,6 +450,36 @@ export class AuthService {
     );
   }
 
+  private throwRecoveryLockedNow(lockoutUntil: Date, retryAfterSeconds: number) {
+    throw new HttpException(
+      {
+        message:
+          'Too many failed recovery attempts. Please try again later.',
+        retryAfterSeconds,
+        lockoutUntil: lockoutUntil.toISOString(),
+      },
+      HttpStatus.TOO_MANY_REQUESTS,
+    );
+  }
+
+  private throwIfRecoveryLocked(lockoutUntil?: Date | null) {
+    if (!lockoutUntil) return;
+
+    const remainingMs = lockoutUntil.getTime() - Date.now();
+    if (remainingMs <= 0) return;
+
+    const retryAfterSeconds = Math.max(1, Math.ceil(remainingMs / 1000));
+    throw new HttpException(
+      {
+        message:
+          'Too many failed recovery attempts. Please try again later.',
+        retryAfterSeconds,
+        lockoutUntil: lockoutUntil.toISOString(),
+      },
+      HttpStatus.TOO_MANY_REQUESTS,
+    );
+  }
+
   /* ================= REGISTER ================= */
 
   async register(dto: RegisterDto) {
@@ -412,12 +502,21 @@ export class AuthService {
         : HashAlgorithm.BCRYPT;
 
     const passwordHash = await HashingUtil.hash(dto.password, hashAlgo);
+    const normalizedRecoveryPhrase = this.normalizeRecoveryPhrase(
+      dto.recoveryPhrase,
+    );
+    this.validateRecoveryPhraseStrength(normalizedRecoveryPhrase);
+    const recoveryPhraseHash = await HashingUtil.hash(
+      normalizedRecoveryPhrase,
+      HashAlgorithm.ARGON2ID,
+    );
 
     const user = await this.usersService.createUser(
       dto.email,
       passwordHash,
       hashAlgo,
       profile,
+      recoveryPhraseHash,
     );
 
     if (dto.securityLevel === 'HIGH') {
@@ -442,6 +541,87 @@ export class AuthService {
         dto.securityLevel !== 'HIGH' || Boolean(user.faceEmbeddingsJson),
       createdAt: user.createdAt,
     };
+  }
+
+  async requestPasswordReset(email: string, ipAddress?: string) {
+    this.consumeForgotPasswordRateLimit(email, ipAddress);
+
+    const user = await this.usersService.findByEmail(email);
+    if (user?.recoveryLockoutUntil && user.recoveryLockoutUntil.getTime() <= Date.now()) {
+      await this.usersService.clearRecoveryLockout(user.id);
+      user.recoveryLockoutUntil = null;
+    }
+
+    this.throwIfRecoveryLocked(user?.recoveryLockoutUntil);
+
+    return {
+      message: 'Enter your recovery phrase and new password to continue.',
+      recoveryRequired: true,
+    };
+  }
+
+  async resetPasswordWithRecovery(
+    email: string,
+    recoveryPhrase: string,
+    newPassword: string,
+    ipAddress?: string,
+  ) {
+    this.consumeForgotPasswordRateLimit(email, ipAddress);
+
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      await this.auditService.log(AuthAction.LOGIN_FAILED);
+      throw new UnauthorizedException('Invalid recovery credentials');
+    }
+
+    if (user.recoveryLockoutUntil && user.recoveryLockoutUntil.getTime() <= Date.now()) {
+      await this.usersService.clearRecoveryLockout(user.id);
+      user.recoveryLockoutUntil = null;
+    }
+
+    this.throwIfRecoveryLocked(user.recoveryLockoutUntil);
+
+    const normalizedRecoveryPhrase =
+      this.normalizeRecoveryPhrase(recoveryPhrase);
+    this.validateRecoveryPhraseStrength(normalizedRecoveryPhrase);
+
+    const validRecoveryPhrase =
+      user.recoveryPhraseHash &&
+      (await HashingUtil.verify(
+        user.recoveryPhraseHash,
+        normalizedRecoveryPhrase,
+        HashAlgorithm.ARGON2ID,
+      ));
+
+    if (!validRecoveryPhrase) {
+      const updated = await this.usersService.recordFailedRecoveryAttempt(
+        user.id,
+      );
+      if (updated.recoveryLockoutUntil && updated.lockoutSecondsApplied) {
+        this.throwRecoveryLockedNow(
+          updated.recoveryLockoutUntil,
+          updated.lockoutSecondsApplied,
+        );
+      }
+      throw new UnauthorizedException('Invalid recovery credentials');
+    }
+
+    const profile = user.securityProfile;
+    const algo =
+      profile.passwordStrategy === 'argon2id'
+        ? HashAlgorithm.ARGON2ID
+        : HashAlgorithm.BCRYPT;
+
+    const newHash = await HashingUtil.hash(newPassword, algo);
+    user.passwordHash = newHash;
+    user.hashAlgorithm = algo;
+    await this.usersService.markRecoverySuccess(user.id);
+    await this.usersService.save(user);
+
+    await this.tokensService.revokeUserSessions(user.id);
+    await this.auditService.log(AuthAction.PASSWORD_CHANGED, user);
+
+    return { message: 'Password reset successfully. Please login again.' };
   }
 
   /* ================= LOGIN ================= */
@@ -518,7 +698,7 @@ export class AuthService {
     };
   }
 
-  async verifyTotpLogin(mfaToken: string, code: string) {
+  async verifyOtpLogin(mfaToken: string, code: string) {
     let payload: { sub: string; purpose: string };
     try {
       payload = this.jwtService.verify(mfaToken);
@@ -697,49 +877,6 @@ export class AuthService {
       threshold: matchResult.threshold,
       ...tokens,
     };
-  }
-
-  async setupTotp(userId: string) {
-    const user = await this.usersService.findById(userId);
-    user.mfaEnabled = false;
-    user.mfaSecretEncrypted = null;
-    await this.usersService.save(user);
-
-    const delivery = await this.issueEmailOtp(user.id, user.email, 'setup');
-
-    return {
-      ...delivery,
-      message: 'We sent a 6-digit code to your email. Enter it to enable email OTP.',
-    };
-  }
-
-  async enableTotp(userId: string, code: string) {
-    const user = await this.usersService.findById(userId);
-    await this.verifyEmailOtp(user.id, code, 'setup');
-
-    user.mfaEnabled = true;
-    user.mfaSecretEncrypted = null;
-    await this.usersService.save(user);
-
-    return {
-      message: 'Email OTP enabled successfully',
-      ...this.createCaptchaChallenge(user.id),
-    };
-  }
-
-  async disableTotp(userId: string, code: string) {
-    const user = await this.usersService.findById(userId);
-    if (!user.mfaEnabled) {
-      throw new BadRequestException('Email OTP is not enabled');
-    }
-
-    await this.verifyEmailOtp(user.id, code, 'disable');
-
-    user.mfaEnabled = false;
-    user.mfaSecretEncrypted = null;
-    await this.usersService.save(user);
-
-    return { message: 'Email OTP disabled successfully' };
   }
 
   async logout(userId: string) {

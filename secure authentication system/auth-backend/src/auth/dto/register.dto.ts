@@ -19,6 +19,10 @@ export class RegisterDto {
   @MinLength(8)
   password!: string;
 
+  @IsNotEmpty()
+  @MinLength(12)
+  recoveryPhrase!: string;
+
   @IsIn(['BASIC', 'BALANCED', 'HIGH'])
   securityLevel!: 'BASIC' | 'BALANCED' | 'HIGH';
 

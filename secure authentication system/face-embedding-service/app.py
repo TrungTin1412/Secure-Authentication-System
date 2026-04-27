@@ -93,8 +93,6 @@ def embed_batch(payload: BatchEmbedRequest):
                 status_code=400,
                 detail=f"No face detected for angle {sample.angle}",
             )
-
-        # Use the largest detected face in the frame.
         face = max(
             faces,
             key=lambda item: (item.bbox[2] - item.bbox[0]) * (item.bbox[3] - item.bbox[1]),

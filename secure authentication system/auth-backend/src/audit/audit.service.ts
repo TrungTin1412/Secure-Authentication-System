@@ -10,7 +10,7 @@ import { User } from 'src/users/user.entity';
 export class AuditService {
   constructor(
     @InjectRepository(AuthLog)
-    private readonly repo: Repository<AuthLog>, // 🔥 FIX
+    private readonly repo: Repository<AuthLog>, 
   ) {}
 
   async log(
@@ -21,7 +21,7 @@ export class AuditService {
     const log = this.repo.create({
       action,
       user: actor,
-      targetUser: target, // nếu entity có field này
+      targetUser: target, 
     });
 
     await this.repo.save(log);

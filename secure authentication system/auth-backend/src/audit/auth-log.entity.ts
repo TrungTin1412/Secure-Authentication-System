@@ -14,20 +14,19 @@ export enum AuthAction {
   REFRESH_REUSE = 'REFRESH_REUSE',
   ADMIN_REVOKE = 'ADMIN_REVOKE',
   REGISTER = 'REGISTER' ,
-  REAUTH_SUCCESS = 'REAUTH_SUCCESS',
   PASSWORD_CHANGED = 'PASSWORD_CHANGED',
 }
 
 @Entity('auth_logs')
 export class AuthLog {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({
     type: 'enum',
     enum: AuthAction,
   })
-  action: AuthAction;
+  action!: AuthAction;
 
   @ManyToOne(() => User, { nullable: true })
   user?: User;
@@ -36,7 +35,7 @@ export class AuthLog {
   targetUser?: User;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @Column({ nullable: true })
   ipAddress?: string;

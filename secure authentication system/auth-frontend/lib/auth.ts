@@ -47,7 +47,7 @@ export type LoginResultWithCaptcha =
   | MfaChallengeResult
   | CaptchaChallengeResult
   | FaceChallengeResult;
-export type TotpVerifyResult =
+export type OtpVerifyResult =
   | FinalAuthResult
   | CaptchaChallengeResult
   | FaceChallengeResult;
@@ -66,11 +66,11 @@ export async function login(email: string, password: string) {
   return res;
 }
 
-export async function verifyLoginTotp(mfaToken: string, code: string) {
+export async function verifyLoginOtp(mfaToken: string, code: string) {
   const res = (await apiRequest('/auth/login/otp_email', 'POST', {
     mfaToken,
     code,
-  })) as TotpVerifyResult;
+  })) as OtpVerifyResult;
 
   if ('captchaRequired' in res && res.captchaRequired) {
     return res;
@@ -113,6 +113,29 @@ export async function refreshLoginCaptcha(captchaId: string) {
   })) as CaptchaChallengeResult;
 }
 
+export async function requestPasswordReset(email: string) {
+  return apiRequest('/auth/forgot-password/request', 'POST', {
+    email,
+  }) as Promise<{
+    message: string;
+    recoveryRequired: true;
+  }>;
+}
+
+export async function resetPasswordWithRecovery(
+  email: string,
+  recoveryPhrase: string,
+  newPassword: string,
+) {
+  return apiRequest('/auth/forgot-password/reset', 'POST', {
+    email,
+    recoveryPhrase,
+    newPassword,
+  }) as Promise<{
+    message: string;
+  }>;
+}
+
 export async function refresh() {
   const refreshToken = localStorage.getItem('refreshToken');
   if (!refreshToken) throw new Error('No refresh token');
@@ -145,4 +168,3 @@ export async function logout() {
     window.location.href = '/login';
   }
 }
-

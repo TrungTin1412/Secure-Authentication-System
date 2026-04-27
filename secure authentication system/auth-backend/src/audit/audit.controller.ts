@@ -17,7 +17,6 @@ export class AuditController {
     return logs.map((log) => ({
       action: log.action,
       createdAt: log.createdAt,
-      // optional – nếu entity có
       ipAddress: log.ipAddress ?? null,
       userAgent: log.userAgent ?? null,
     }));

@@ -5,8 +5,9 @@ import { LoginDto } from './dto/login.dto';
 import { VerifyLoginotpDto } from './dto/verify-login-otp.dto';
 import { VerifyLoginCaptchaDto } from './dto/verify-login-captcha.dto';
 import { RefreshLoginCaptchaDto } from './dto/refresh-login-captcha.dto';
-import { OtpCodeDto } from './dto/otp-code.dto';
 import { VerifyLoginFaceDto } from './dto/verify-login-face.dto';
+import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
+import { ResetPasswordWithRecoveryDto } from './dto/reset-password-with-recovery.dto';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { JwtGuard } from 'src/common/guards/jwt.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -28,7 +29,7 @@ export class AuthController {
 
   @Post('login/otp_email')
   async verifyLoginOtpEmail(@Body() dto: VerifyLoginotpDto) {
-    return this.authService.verifyTotpLogin(dto.mfaToken, dto.code);
+    return this.authService.verifyOtpLogin(dto.mfaToken, dto.code);
   }
 
   @Post('login/captcha')
@@ -50,24 +51,24 @@ export class AuthController {
     return this.authService.refreshCaptchaChallenge(dto.captchaId);
   }
 
-  @UseGuards(JwtGuard)
-  @Post('mfa/otp_email/setup')
-  async setupOtpEmail(@Req() req) {
-    return this.authService.setupTotp(req.user.sub);
+  @Post('forgot-password/request')
+  async requestPasswordReset(@Body() dto: RequestPasswordResetDto, @Req() req) {
+    return this.authService.requestPasswordReset(dto.email, req.ip);
   }
 
-  @UseGuards(JwtGuard)
-  @Post('mfa/otp_email/enable')
-  async enableOtpEmail(@Req() req, @Body() dto: OtpCodeDto) {
-    return this.authService.enableTotp(req.user.sub, dto.code);
+  @Post('forgot-password/reset')
+  async resetPasswordWithRecovery(
+    @Body() dto: ResetPasswordWithRecoveryDto,
+    @Req() req,
+  ) {
+    return this.authService.resetPasswordWithRecovery(
+      dto.email,
+      dto.recoveryPhrase,
+      dto.newPassword,
+      req.ip,
+    );
   }
 
-  @UseGuards(JwtGuard)
-  @Post('mfa/otp_email/disable')
-  async disableOtpEmail(@Req() req, @Body() dto: OtpCodeDto) {
-    return this.authService.disableTotp(req.user.sub, dto.code);
-  }
-  
   @Post('refresh')
   async refresh(@Body('refreshToken') refreshToken: string) {
     return this.authService.refresh(refreshToken);

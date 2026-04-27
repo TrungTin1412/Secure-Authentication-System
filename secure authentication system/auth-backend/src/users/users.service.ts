@@ -37,9 +37,10 @@ export class UsersService {
         hashAlgorithm: true,
         failedLoginAttempts: true,
         loginLockoutUntil: true,
+        recoveryPhraseHash: true,
+        recoveryFailedAttempts: true,
+        recoveryLockoutUntil: true,
         lastAuthenticatedAt: true,
-        mfaEnabled: true,
-        mfaSecretEncrypted: true,
         emailOtpHash: true,
         emailOtpExpiresAt: true,
         emailOtpPurpose: true,
@@ -54,6 +55,7 @@ export class UsersService {
     passwordHash: string,
     hashAlgorithm: string,
     profile: SecurityProfile,
+    recoveryPhraseHash: string,
   ): Promise<User> {
 
     // 1. Lấy role USER
@@ -71,6 +73,7 @@ export class UsersService {
       email,
       passwordHash,
       hashAlgorithm,
+      recoveryPhraseHash,
       securityProfile: profile,
       status: UserStatus.ACTIVE,
       role: userRole,
@@ -108,9 +111,10 @@ export class UsersService {
       'user.hashAlgorithm',
       'user.failedLoginAttempts',
       'user.loginLockoutUntil',
+      'user.recoveryPhraseHash',
+      'user.recoveryFailedAttempts',
+      'user.recoveryLockoutUntil',
       'user.lastAuthenticatedAt',
-      'user.mfaEnabled',
-      'user.mfaSecretEncrypted',
       'user.emailOtpHash',
       'user.emailOtpExpiresAt',
       'user.emailOtpPurpose',
@@ -193,6 +197,79 @@ export class UsersService {
       { id: userId },
       {
         loginLockoutUntil: null,
+      },
+    );
+  }
+
+  async recordFailedRecoveryAttempt(userId: string): Promise<{
+    recoveryFailedAttempts: number;
+    recoveryLockoutUntil: Date | null;
+    lockoutSecondsApplied: number | null;
+  }> {
+    return this.userRepository.manager.transaction(async (manager) => {
+      const repo = manager.getRepository(User);
+
+      const lockedUser = await repo.findOne({
+        where: { id: userId },
+        lock: { mode: 'pessimistic_write' },
+        select: {
+          id: true,
+          recoveryFailedAttempts: true,
+          recoveryLockoutUntil: true,
+        },
+      });
+
+      if (!lockedUser) {
+        throw new NotFoundException('User not found');
+      }
+
+      const nowMs = Date.now();
+      const currentLockoutUntil = lockedUser.recoveryLockoutUntil ?? null;
+      if (currentLockoutUntil && currentLockoutUntil.getTime() > nowMs) {
+        return {
+          recoveryFailedAttempts: lockedUser.recoveryFailedAttempts ?? 0,
+          recoveryLockoutUntil: currentLockoutUntil,
+          lockoutSecondsApplied: null,
+        };
+      }
+
+      const nextAttempts = (lockedUser.recoveryFailedAttempts ?? 0) + 1;
+      const lockoutSecondsApplied = nextAttempts >= 3 ? 10 * 60 : null;
+      const nextLockoutUntil = lockoutSecondsApplied
+        ? new Date(nowMs + lockoutSecondsApplied * 1000)
+        : null;
+
+      await repo.update(
+        { id: userId },
+        {
+          recoveryFailedAttempts: nextAttempts,
+          recoveryLockoutUntil: nextLockoutUntil,
+        },
+      );
+
+      return {
+        recoveryFailedAttempts: nextAttempts,
+        recoveryLockoutUntil: nextLockoutUntil,
+        lockoutSecondsApplied,
+      };
+    });
+  }
+
+  async clearRecoveryLockout(userId: string) {
+    await this.userRepository.update(
+      { id: userId },
+      {
+        recoveryLockoutUntil: null,
+      },
+    );
+  }
+
+  async markRecoverySuccess(userId: string) {
+    await this.userRepository.update(
+      { id: userId },
+      {
+        recoveryFailedAttempts: 0,
+        recoveryLockoutUntil: null,
       },
     );
   }
