@@ -19,24 +19,24 @@ export enum RefreshStrategy {
 @Entity('security_profiles')
 export class SecurityProfile {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ unique: true })
-  name: string;
+  name!: string;
   // e.g. Basic, Balanced, High
 
   @Column({ name: 'password_strategy' })
-  passwordStrategy: PasswordStrategy;
+  passwordStrategy!: PasswordStrategy;
 
   @Column({ name: 'refresh_strategy' })
-  refreshStrategy: RefreshStrategy;
+  refreshStrategy!: RefreshStrategy;
 
   @Column({ name: 'access_token_ttl' })
-  accessTokenTTL: number; // seconds
+  accessTokenTTL!: number; // seconds
 
   @Column({ name: 'refresh_token_ttl' })
-  refreshTokenTTL: number; // seconds
+  refreshTokenTTL!: number; // seconds
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt!: Date;
 }
