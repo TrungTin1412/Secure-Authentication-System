@@ -480,7 +480,7 @@ export class AuthService {
     );
   }
 
-  /* ================= REGISTER ================= */
+  // REGISTER //
 
   async register(dto: RegisterDto) {
     const existingUser = await this.usersService.findByEmail(dto.email);
@@ -624,7 +624,7 @@ export class AuthService {
     return { message: 'Password reset successfully. Please login again.' };
   }
 
-  /* ================= LOGIN ================= */
+  // LOGIN //
 
   async login(dto: LoginDto) {
     const user = await this.usersService.findForLoginFresh(dto.email);
@@ -887,7 +887,7 @@ export class AuthService {
     return { message: 'Logged out successfully' };
   }
 
-  /* ================= REFRESH ================= */
+  // REFRESH //
 
   async refresh(rawRefreshToken: string) {
     const { userId, newRefreshToken } =
@@ -914,7 +914,7 @@ export class AuthService {
     };
   }
 
-  /* ================= ADMIN REVOKE ================= */
+  // ADMIN REVOKE //
 
   async revokeUserSessions(
     targetUserId: string,
@@ -932,7 +932,7 @@ export class AuthService {
     await this.auditService.log(AuthAction.ADMIN_REVOKE, adminUser, targetUser);
   }
 
-  /* ================= CHANGE PASSWORD ================= */
+  // CHANGE PASSWORD //
 
   async changePassword(
     userId: string,

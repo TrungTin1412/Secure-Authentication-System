@@ -58,7 +58,7 @@ export class UsersService {
     recoveryPhraseHash: string,
   ): Promise<User> {
 
-    // 1. Lấy role USER
+    // Get user's role
     const userRole = await this.roleRepository.findOne({
       where: { name: 'USER' },
     });
@@ -67,7 +67,7 @@ export class UsersService {
       throw new Error('Default role USER not found');
     }
 
-    // 2. Tạo user
+    // Create user
 
     const user = this.userRepository.create({
       email,

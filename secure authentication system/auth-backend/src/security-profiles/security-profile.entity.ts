@@ -23,7 +23,7 @@ export class SecurityProfile {
 
   @Column({ unique: true })
   name!: string;
-  // e.g. Basic, Balanced, High
+  // Basic, Balanced, High
 
   @Column({ name: 'password_strategy' })
   passwordStrategy!: PasswordStrategy;

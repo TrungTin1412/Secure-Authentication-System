@@ -14,7 +14,7 @@ import { Role } from 'src/roles/role.entity';
   imports: [
     TypeOrmModule.forFeature([User, Role]),
     JwtModule.register({
-      secret: 'super-secret-key', // dùng cùng secret với AuthModule
+      secret: 'super-secret-key', 
     }),
   ],
   controllers: [UsersController],

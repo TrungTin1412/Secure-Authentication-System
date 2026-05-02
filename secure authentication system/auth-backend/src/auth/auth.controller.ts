@@ -89,7 +89,7 @@ export class AuthController {
   ) {
     await this.authService.revokeUserSessions(
       userId,
-      req.user.sub, // admin id
+      req.user.sub, 
     );
 
     return { message: 'User sessions revoked' };

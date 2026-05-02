@@ -3,7 +3,7 @@ import styles from './dashboard.module.css';
 import { apiRequest } from '../lib/api';
 import { refresh, logout } from '../lib/auth';
 
-/* ================= TYPES ================= */
+//TYPES //
 
 type MeResponse = {
   userId: string;
@@ -32,7 +32,7 @@ function isAdminLog(row: LogRow): row is AdminLogRow {
   return 'email' in row;
 }
 
-/* ================= HELPERS ================= */
+//HELPERS //
 
 function formatCountdown(sec: number) {
   const s = Math.max(0, sec);
@@ -97,7 +97,7 @@ function getActionClass(action: string) {
   }
 }
 
-/* ================= COMPONENT ================= */
+//COMPONENT //
 
 export default function DashboardPage() {
   const [me, setMe] = useState<MeResponse | null>(null);
@@ -107,7 +107,7 @@ export default function DashboardPage() {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
-  /* ---------- CHANGE PASSWORD ---------- */
+  // CHANGE PASSWORD //
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -155,14 +155,14 @@ export default function DashboardPage() {
     doChange();
   }
 
-  /* ---------- FETCH USER INFO ---------- */
+  // FETCH USER INFO //
   useEffect(() => {
     apiRequest('/users/me', 'GET', undefined, true)
       .then((data) => setMe(data))
       .catch(() => logout());
   }, []);
 
-  /* ---------- FETCH AUDIT LOG ---------- */
+  // FETCH AUDIT LOG //
   useEffect(() => {
     if (!me) return;
 
@@ -187,7 +187,7 @@ export default function DashboardPage() {
     fetchLogs();
   }, [me]);
 
-  /* ---------- TOKEN COUNTDOWN ---------- */
+  // TOKEN COUNTDOWN //
   useEffect(() => {
     const raw = localStorage.getItem('expiresAt');
     setExpiresAt(raw ? Number(raw) : null);
@@ -209,7 +209,7 @@ export default function DashboardPage() {
     return () => clearInterval(timer);
   }, [expiresAt]);
 
-  /* ---------- REFRESH ON EXPIRY ---------- */
+  // REFRESH ON EXPIRY //
   useEffect(() => {
     if (secondsLeft !== 1 || refreshing) return;
 
@@ -224,26 +224,10 @@ export default function DashboardPage() {
       .finally(() => setRefreshing(false));
   }, [secondsLeft, refreshing]);
 
-  /* ---------- HEARTBEAT (HIGH only) ---------- */
-  useEffect(() => {
-    if (!me || me.securityLevel !== 'HIGH') return;
-
-    const interval = setInterval(() => {
-      apiRequest(
-        me.role === 'ADMIN' ? '/audit/admin' : '/audit/me',
-        'GET',
-        undefined,
-        true,
-      ).catch(handleApiError);
-    }, 15000);
-
-    return () => clearInterval(interval);
-  }, [me]);
-
   const isAdmin = me?.role === 'ADMIN';
   const level = me?.securityLevel;
   const summary = level ? getSecuritySummary(level) : null;
-  /* ================= RENDER ================= */
+  //RENDER //
 
   return (
     <div className={styles.page}>
